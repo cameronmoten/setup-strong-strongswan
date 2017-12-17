@@ -352,7 +352,7 @@ charon {
   plugins {
     include strongswan.d/charon/*.conf
     attr {
-      dns = 8.8.8.8, 8.8.4.4
+      dns = $VPNINSTANTDNS1, $VPNINSTANTDNS2
     }
   }
 }
