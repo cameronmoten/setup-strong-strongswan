@@ -20,9 +20,13 @@ fi
 
 [ -z "$STRONGSWAN_TMP" ] && STRONGSWAN_TMP="/tmp/strongswan"
 [ -z "$STRONGSWAN_VERSION" ] && STRONGSWAN_VERSION="5.6.1"
+[ -z "$STRONGSWAN_VERSION_MD5" ] && STRONGSWAN_VERSION_MD5="cf98296db171ea2fa5b9aa830aed3a75"
 [ -z "$KEYSIZE" ] && KEYSIZE=16
 STRONGSWAN_USER = "$VPNINSTANTUSER"
 STRONGSWAN_PASSWORD  = "$VPNINSTANTPASS"
+INTERACTIVE = "false"
+VPNINSTANTDNS1 = "$VPNINSTANTDNS1"
+VPNINSTANTDNS2 = "$VPNINSTANTDNS2"
 #STRONGSWAN_PSK  = "$VPNINSTANTPSK"
 
 if [ -z "$INTERACTIVE" ]; then
@@ -31,7 +35,6 @@ fi
 [[ $INTERACTIVE = "true" ]] && INTERACTIVE=1
 [[ $INTERACTIVE = "false" ]] && INTERACTIVE=0
 
-INTERACTIVE=0
 
 #################################################################
 # Functions
@@ -220,13 +223,6 @@ fi
 call rm -rf $STRONGSWAN_TMP
 call mkdir -p $STRONGSWAN_TMP
 
-curl -sSL "https://github.com/icy/pacapt/raw/ng/pacapt" > $STRONGSWAN_TMP/pacapt
-if [ "$?" = "1" ]; then
-  bigEcho "An unexpected error occured while downloading pacapt!"
-  exit 1
-fi
-
-call chmod +x $STRONGSWAN_TMP/pacapt
 
 echo ""
 
@@ -234,11 +230,7 @@ echo ""
 
 bigEcho "Installing necessary dependencies"
 
-call pacapt -Sy --noconfirm
-checkForError
-
-call pacapt -S --noconfirm -- make g++ gcc iptables xl2tpd libssl-dev module-init-tools curl openssl-devel
-checkForError
+apt-get -y -q install build-essential moreutils iptables-persistent libssl-dev
 
 #################################################################
 
@@ -391,8 +383,8 @@ EOF
 cat > /etc/ppp/options.xl2tpd <<EOF
 ipcp-accept-local
 ipcp-accept-remote
-ms-dns 8.8.8.8
-ms-dns 8.8.4.4
+ms-dns $VPNINSTANTDNS1
+ms-dns $VPNINSTANTDNS2
 noccp
 auth
 crtscts
